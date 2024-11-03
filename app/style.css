@@ -1,0 +1,31 @@
+body {
+	font-family: Arial, sans-serif;
+	text-align: center;
+}
+
+#chart {
+	width: 100%;
+	height: 800px;
+}
+
+#tooltip {
+	position: absolute;
+	text-align: left;
+	padding: 10px;
+	background: lightsteelblue;
+	border: 1px solid #333;
+	border-radius: 5px;
+	pointer-events: none;
+}
+
+.hidden {
+	display: none;
+}
+
+.label {
+	fill: black;
+	stroke: white;
+	stroke-width: 0.5px;
+	text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff,
+		1px 1px 0 #fff;
+}
