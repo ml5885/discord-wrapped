@@ -4,8 +4,7 @@ body {
 }
 
 #chart {
-	width: 100%;
-	height: 800px;
+	border: 1px solid #ccc;
 }
 
 #tooltip {
@@ -20,12 +19,4 @@ body {
 
 .hidden {
 	display: none;
-}
-
-.label {
-	fill: black;
-	stroke: white;
-	stroke-width: 0.5px;
-	text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff,
-		1px 1px 0 #fff;
 }

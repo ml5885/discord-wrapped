@@ -5,7 +5,15 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 from sklearn.cluster import KMeans
 from sklearn.manifold import TSNE
-from sklearn.feature_extraction.text import TfidfVectorizer
+import nltk
+from nltk.corpus import stopwords
+from gensim import corpora, models
+import re
+from nltk.stem import WordNetLemmatizer
+
+# Download NLTK data
+nltk.download('stopwords')
+nltk.download('wordnet')
 
 def load_messages(directory):
     messages = []
@@ -32,7 +40,7 @@ def preprocess_messages(df):
 
 def generate_embeddings(df):
     # Use BERT embeddings
-    # model = SentenceTransformer('all-MiniLM-L6-v2')
+    # For a lighter model, you can use 'all-MiniLM-L6-v2'
     model = SentenceTransformer('bert-base-nli-mean-tokens')
     embeddings = model.encode(df['content'].tolist(), show_progress_bar=True)
     df['embedding'] = embeddings.tolist()
@@ -51,6 +59,10 @@ def cluster_embeddings(df, num_clusters=10):
 
 def assign_cluster_labels(df):
     cluster_labels = {}
+    stop_words = set(stopwords.words('english'))
+    custom_stop_words = set(['like', 'yeah', 'okay', 'don', 've', 're', 'll', 'im', 'oh'])
+    stop_words.update(custom_stop_words)
+    lemmatizer = WordNetLemmatizer()
     for cluster in df['cluster'].unique():
         cluster_df = df[df['cluster'] == cluster]
         texts = cluster_df['content'].tolist()
@@ -58,16 +70,30 @@ def assign_cluster_labels(df):
         if len(texts) == 0:
             cluster_labels[cluster] = 'No Label'
             continue
-        # Apply TF-IDF
-        vectorizer = TfidfVectorizer(stop_words='english', max_features=5)
+        # Preprocess texts
+        processed_texts = []
+        for text in texts:
+            # Remove non-alphabetic characters and tokenize
+            tokens = re.findall(r'\b[a-zA-Z]+\b', text.lower())
+            # Remove stopwords
+            tokens = [word for word in tokens if word not in stop_words]
+            # Optional lemmatization
+            # tokens = [lemmatizer.lemmatize(word) for word in tokens]
+            processed_texts.append(tokens)
+        # Create dictionary and corpus for LDA
+        dictionary = corpora.Dictionary(processed_texts)
+        corpus = [dictionary.doc2bow(text) for text in processed_texts]
+        # Train LDA model
         try:
-            X = vectorizer.fit_transform(texts)
-            terms = vectorizer.get_feature_names_out()
-            label = ', '.join(terms[:3])  # Take top 3 terms
+            lda_model = models.LdaModel(corpus, num_topics=1, id2word=dictionary, passes=10)
+            # Get the top words for the topic
+            top_words = lda_model.show_topic(0, topn=3)
+            label = ', '.join([word for word, prob in top_words])
             cluster_labels[cluster] = label
-        except ValueError:
-            # Handle clusters with insufficient data
+        except Exception as e:
+            # Handle exceptions (e.g., not enough data)
             cluster_labels[cluster] = 'No Label'
+            print(f"Could not generate label for cluster {cluster}: {e}")
     df['cluster_label'] = df['cluster'].map(cluster_labels)
     return df
 
@@ -80,10 +106,17 @@ def reduce_dimensions(df):
     return df
 
 def prepare_visualization_data(df, output_json):
-    vis_data = df[['content', 'timestamp', 'author', 'cluster', 'cluster_label', 'x', 'y']].to_dict(orient='records')
+    # Sample data if it's too large
+    max_points = 5000  # Adjust as needed
+    if len(df) > max_points:
+        df_sampled = df.sample(n=max_points, random_state=42)
+    else:
+        df_sampled = df
+
+    vis_data = df_sampled[['content', 'timestamp', 'author', 'cluster', 'cluster_label', 'x', 'y']].to_dict(orient='records')
     with open(output_json, 'w', encoding='utf-8') as f:
         json.dump(vis_data, f, ensure_ascii=False)
-    print(f"Visualization data saved to {output_json}")
+    print(f"Visualization data saved to {output_json} (sampled {len(df_sampled)} points)")
 
 if __name__ == "__main__":
     data_dir = 'DiscordChat/dumbassnamedtuna_8b1cfad5-4618-4ac3-8acd-90ac1d281cbf'
