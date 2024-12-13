@@ -134,7 +134,6 @@ d3.json("vis_data.json").then((data) => {
 		let baseColor = color(d.cluster_label);
 
 		if (selectedCluster && d.cluster_label !== selectedCluster) {
-			// Use a faded grey color
 			return d3.color("lightgrey").copy({ opacity: 0.3 });
 		}
 

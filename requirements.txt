@@ -2,8 +2,9 @@ numpy
 pandas
 scikit-learn
 sentence-transformers
-umap-learn
-flask
-hdbscan
+transformers
 gensim
-nltk
+flask
+matplotlib
+umap-learn
+spacy

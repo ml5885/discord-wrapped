@@ -1,9 +1,19 @@
 body {
 	font-family: Arial, sans-serif;
 	text-align: center;
+	margin: 0;
+	padding: 0;
+}
+
+h1 {
+	color: black;
+	margin: 0;
+	padding: 20px 0;
 }
 
 #chart {
+	display: block;
+	margin: 20px auto;
 	border: 1px solid #ccc;
 }
 
@@ -11,10 +21,13 @@ body {
 	position: absolute;
 	text-align: left;
 	padding: 10px;
-	background: lightsteelblue;
+	background: rgba(255, 255, 255, 0.9);
 	border: 1px solid #333;
 	border-radius: 5px;
 	pointer-events: none;
+	font-size: 14px;
+	max-width: 400px;
+	word-wrap: break-word;
 }
 
 .hidden {
