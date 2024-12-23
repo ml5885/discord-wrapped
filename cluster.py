@@ -14,6 +14,7 @@ import spacy
 from scipy.special import logsumexp
 from sklearn.manifold import TSNE
 from sentence_transformers import SentenceTransformer
+import zipfile
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 os.makedirs("app", exist_ok=True)
@@ -234,15 +235,24 @@ if __name__ == "__main__":
     parser.add_argument("--force_new_embeddings", action="store_true", help="Force regeneration of embeddings even if cached")
     args = parser.parse_args()
 
-    data_dir = "DiscordChat/dumbassnamedtuna_8b1cfad5-4618-4ac3-8acd-90ac1d281cbf"
+    data_dir = "DiscordChat/dumbassnamedtuna_8b1cfad5-4618-4ac3-8acd-90ac1d281cbf.zip"
 
     print("\n=== Loading and Preprocessing Messages ===")
+    
+    if data_dir.endswith(".zip"):
+      with zipfile.ZipFile(data_dir, 'r') as zip_ref:
+        zip_ref.extractall("DiscordChat")
+      data_dir = data_dir.replace(".zip", "")
+        
     df = load_messages(data_dir)
     df = preprocess_messages(df)
     print(f"After preprocessing, {len(df)} messages remain.")
 
     print("\n=== Processing Text Data ===")
     tfidf_matrix, feature_names = process_text_data(df)
+    
+    import pdb
+    pdb.set_trace()
 
     print("\n=== Generating Embeddings ===")
     embeddings = generate_embeddings(df, model_name=args.embedding_model, force_new_embeddings=args.force_new_embeddings)
