@@ -240,9 +240,11 @@ if __name__ == "__main__":
     print("\n=== Loading and Preprocessing Messages ===")
     
     if data_dir.endswith(".zip"):
-      with zipfile.ZipFile(data_dir, 'r') as zip_ref:
-        zip_ref.extractall("DiscordChat")
-      data_dir = data_dir.replace(".zip", "")
+      extracted_dir = data_dir.replace(".zip", "")
+      if not os.path.exists(extracted_dir):
+        with zipfile.ZipFile(data_dir, 'r') as zip_ref:
+          zip_ref.extractall("DiscordChat")
+      data_dir = extracted_dir
         
     df = load_messages(data_dir)
     df = preprocess_messages(df)
